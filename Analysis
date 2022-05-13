@@ -1,0 +1,79 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May 11 14:35:11 2022
+
+@author: louis
+"""
+import datetime as dt
+import numpy as np
+import pandas as pd
+from datetime import datetime
+
+
+tol = pd.Timedelta('1 hour, 30 minute')
+df = pd.merge_asof(trains.sort_values('AcD'),weather_lon.sort_values('AcD'),on='AcD',direction='nearest',tolerance=tol)
+df = pd.merge_asof(df.sort_values('AcA'),weather_man.sort_values('AcA'),on='AcA',direction='nearest',tolerance=tol)
+
+df['left_late'] = df['AcD']-df['ScD']
+
+conditions1 = [(df['left_late']< dt.timedelta(minutes=5)),
+              (df['left_late']> dt.timedelta(minutes=5)) & (df['left_late']< dt.timedelta(minutes=10)),
+              (df['left_late'] > dt.timedelta(minutes=10)) & (df['left_late']< dt.timedelta(minutes=15)),
+              (df['left_late']> dt.timedelta(minutes=15)) & (df['left_late']< dt.timedelta(minutes=20)),
+              (df['left_late']> dt.timedelta(minutes=20))]
+values1 = [0,1,2,3,4]
+
+df['left_late'] = np.select(conditions1,values1)
+
+conditions2 = [(df['ScD'].dt.time < dt.time(5)),
+              (df['ScD'].dt.time > dt.time(5)) & (df['ScD'].dt.time < dt.time(9)) & (df['ScD'].dt.weekday < 5) ,
+              (df['ScD'].dt.time > dt.time(5)) & (df['ScD'].dt.time < dt.time(9)) & (df['ScD'].dt.weekday >4) ,
+              (df['ScD'].dt.time > dt.time(9)) & (df['ScD'].dt.time < dt.time(16)),
+              (df['ScD'].dt.time > dt.time(16)) & (df['ScD'].dt.time < dt.time(18,5)) & (df['ScD'].dt.weekday < 5),
+              (df['ScD'].dt.time > dt.time(16)) & (df['ScD'].dt.time < dt.time(18,5)) & (df['ScD'].dt.weekday > 4),
+              (df['ScD'].dt.time > dt.time(18,5))]
+
+values2 = [0,1,0,0,1,0,0]
+
+df['Peak'] = np.select(conditions2,values2)
+
+
+df['time_late'] = df['AcA']-df['ScA']
+df.time_late[df.time_late < dt.timedelta(0)] = dt.timedelta(0)
+df['Delayed'] = np.where(df['time_late']>dt.timedelta(minutes = 10),1,-1)
+df.drop(df[df.ScD >datetime(2022,4,28)].index, inplace=True)
+
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn import preprocessing
+from sklearn import tree
+
+X = df.drop(['ScD','AcD','ScA','AcA','time_late','Delayed'],axis='columns')
+X.head()
+
+
+normalisedX = pd.DataFrame(preprocessing.normalize(X))
+
+y=df.Delayed
+X_train, X_test, y_train, y_test = train_test_split(normalisedX,y,test_size=0.20)
+
+model=SVC(C=10, gamma=1)
+model.fit(X_train,y_train)
+
+model.score(X_test,y_test)
+y_pred = model.predict(X_test)
+
+print(confusion_matrix(y_test,y_pred))
+print(classification_report(y_test, y_pred))
+
+
+
+clf = tree.DecisionTreeClassifier(criterion='entropy')
+clf = clf.fit(X_train, y_train)
+clf.score(X_test,y_test)
+
+y_pred = clf.predict(X_test)
+
+print(confusion_matrix(y_test,y_pred))
+print(classification_report(y_test, y_pred))
