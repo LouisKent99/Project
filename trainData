@@ -1,0 +1,83 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri May  6 14:27:19 2022
+
+@author: louis
+"""
+
+import requests 
+import json
+import numpy as np
+import pandas as pd
+
+
+def jprint(obj):
+    # create a formatted string of the Python JSON object
+    text = json.dumps(obj, sort_keys=True, indent=4)
+    print(text)
+
+#parameters for retrieving data from National Rail Historic Service Performance API
+params = {"from_loc":"EUS",
+    "to_loc":"MAN",
+    "from_time":"0600",
+    "to_time":"2000",
+    "from_date":"2021-09-01",
+    "to_date":"2022-05-01",
+    "days":"WEEKDAY"}
+
+headers = {'Content-type': 'application/json'}
+
+
+response = requests.post("https://hsp-prod.rockshore.net/api/v1/serviceMetrics",auth=('louiskent1999@gmail.com','NSvxT!dG7kQ!3Bs'),headers=headers,json=params)
+print(response.status_code)
+
+jsonResponse = response.json()
+
+
+#Finding all train RIDs - unique train identifier - that have ran based on params
+
+rid = []
+for i in range(len(jsonResponse["Services"])):
+    tmp = np.array(jsonResponse["Services"][i]["serviceAttributesMetrics"]["rids"])
+    rid.append(tmp)
+rid = np.concatenate(rid)
+
+#Using the RIDs specific details about the train journey/
+# Of interest here is the scheduled and actual departure and arrival, the date, and the number of stations
+arr= np.empty((6,0))
+for i in range(len(rid)):
+    params2 = {
+    "rid":rid[i]}
+    response2 = requests.post("https://hsp-prod.rockshore.net/api/v1/serviceDetails",auth=('louiskent1999@gmail.com','NSvxT!dG7kQ!3Bs'),headers=headers,json=params2)
+    jsonResponse2 = response2.json()
+    tmp = np.array([jsonResponse2["serviceAttributesDetails"]["date_of_service"],
+    jsonResponse2["serviceAttributesDetails"]["locations"][0]["gbtt_ptd"], 
+    jsonResponse2["serviceAttributesDetails"]["locations"][0]["actual_td"],
+    jsonResponse2["serviceAttributesDetails"]["locations"][len(jsonResponse2["serviceAttributesDetails"]["locations"])-1]["gbtt_pta"], 
+    jsonResponse2["serviceAttributesDetails"]["locations"][len(jsonResponse2["serviceAttributesDetails"]["locations"])-1]["actual_ta"],
+    len(jsonResponse2["serviceAttributesDetails"]["locations"])])
+    tmp = pd.DataFrame(tmp)
+    arr = np.append(arr,tmp,1)
+
+#this gets formatted and converted into a CSV
+trains = arr
+trains = pd.DataFrame(trains.transpose())
+trains.columns = ['Date','ScD', 'AcD', 'ScA','AcA','NoS']
+
+np.where(pd.isnull(trains))
+trains.replace('', np.nan, inplace=True)
+trains = trains.dropna()
+
+trains.ScD = [f"{el[:2]}:{el[2:]}" for el in trains.ScD]
+trains.AcD = [f"{el[:2]}:{el[2:]}" for el in trains.AcD]
+trains.ScA = [f"{el[:2]}:{el[2:]}" for el in trains.ScA]
+trains.AcA = [f"{el[:2]}:{el[2:]}" for el in trains.AcA]
+
+
+#columns converted to datetime format
+trains['ScD'] = pd.to_datetime(trains['Date'] + trains['ScD'], format='%Y-%m-%d%H:%M')
+trains['AcD'] = pd.to_datetime(trains['Date'] + trains['AcD'], format='%Y-%m-%d%H:%M')
+trains['ScA'] = pd.to_datetime(trains['Date'] + trains['ScA'], format='%Y-%m-%d%H:%M')
+trains['AcA'] = pd.to_datetime(trains['Date'] + trains['AcA'], format='%Y-%m-%d%H:%M')
+trains=trains.drop(['Date'],axis=1)
+
