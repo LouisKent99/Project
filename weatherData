@@ -1,0 +1,301 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue May 10 19:10:59 2022
+
+This data scraoe is convoluted but was the only way to get free access to historical data
+I could find. Requires 7 separate get requests to worldweatheronline.com at two different
+locations and then a concatenation of specifc weather features of interest which 
+affect train delays.
+
+
+@author: louis
+"""
+import requests 
+import numpy as np
+import pandas as pd
+def json_extract(obj, key):
+    """Recursively fetch values from nested JSON."""
+    arr = []
+
+    def extract(obj, arr, key):
+        """Recursively search for values of key in JSON tree."""
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(v, (dict, list)):
+                    extract(v, arr, key)
+                elif k == key:
+                    arr.append(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                extract(item, arr, key)
+        return arr
+
+    values = extract(obj, arr, key)
+    return values
+
+
+weather_response1 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Manchester&format=json&date=2021-09-01&enddate=2022-04-29&includelocation=M19 2FU")
+print(weather_response1.status_code)
+
+
+dates1 = np.repeat(json_extract(weather_response1.json(),'date'),8)
+
+times1 = np.array(json_extract(weather_response1.json(),'time'))
+
+temps1 = np.array(json_extract(weather_response1.json(),'tempC'))
+
+winds1 = np.array(json_extract(weather_response1.json(),'windspeedKmph'))
+
+precips1 = np.array(json_extract(weather_response1.json(),'precipMM'))
+
+vis1 = np.array(json_extract(weather_response1.json(),'visibility'))
+
+weather_response2 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Manchester&format=json&date=2021-10-05&enddate=2022-04-29&includelocation=M19 2FU")
+print(weather_response2.status_code)
+
+
+dates2 = np.repeat(json_extract(weather_response2.json(),'date'),8)
+
+times2 = np.array(json_extract(weather_response2.json(),'time'))
+
+temps2 = np.array(json_extract(weather_response2.json(),'tempC'))
+
+winds2 = np.array(json_extract(weather_response2.json(),'windspeedKmph'))
+
+precips2 = np.array(json_extract(weather_response2.json(),'precipMM'))
+
+vis2 = np.array(json_extract(weather_response2.json(),'visibility'))
+
+weather_response3 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Manchester&format=json&date=2021-11-08&enddate=2022-04-29&includelocation=M19 2FU")
+print(weather_response3.status_code)
+
+
+dates3 = np.repeat(json_extract(weather_response3.json(),'date'),8)
+
+times3 = np.array(json_extract(weather_response3.json(),'time'))
+
+temps3 = np.array(json_extract(weather_response3.json(),'tempC'))
+
+winds3 = np.array(json_extract(weather_response3.json(),'windspeedKmph'))
+
+precips3 = np.array(json_extract(weather_response3.json(),'precipMM'))
+
+vis3 = np.array(json_extract(weather_response3.json(),'visibility'))
+
+weather_response4 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Manchester&format=json&date=2021-12-12&enddate=2022-04-29&includelocation=M19 2FU")
+print(weather_response4.status_code)
+
+
+dates4 = np.repeat(json_extract(weather_response4.json(),'date'),8)
+
+times4 = np.array(json_extract(weather_response4.json(),'time'))
+
+temps4 = np.array(json_extract(weather_response4.json(),'tempC'))
+
+winds4 = np.array(json_extract(weather_response4.json(),'windspeedKmph'))
+
+precips4 = np.array(json_extract(weather_response4.json(),'precipMM'))
+
+vis4 = np.array(json_extract(weather_response4.json(),'visibility'))
+
+weather_response5 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Manchester&format=json&date=2022-01-15&enddate=2022-04-29&includelocation=M19 2FU")
+print(weather_response5.status_code)
+
+
+dates5 = np.repeat(json_extract(weather_response5.json(),'date'),8)
+
+times5 = np.array(json_extract(weather_response5.json(),'time'))
+
+temps5 = np.array(json_extract(weather_response5.json(),'tempC'))
+
+winds5 = np.array(json_extract(weather_response5.json(),'windspeedKmph'))
+
+precips5 = np.array(json_extract(weather_response5.json(),'precipMM'))
+
+vis5 = np.array(json_extract(weather_response5.json(),'visibility'))
+
+weather_response6 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Manchester&format=json&date=2022-02-18&enddate=2022-04-29&includelocation=M19 2FU")
+print(weather_response6.status_code)
+
+
+dates6 = np.repeat(json_extract(weather_response6.json(),'date'),8)
+
+times6 = np.array(json_extract(weather_response6.json(),'time'))
+
+temps6 = np.array(json_extract(weather_response6.json(),'tempC'))
+
+winds6 = np.array(json_extract(weather_response6.json(),'windspeedKmph'))
+
+precips6 = np.array(json_extract(weather_response6.json(),'precipMM'))
+
+vis6 = np.array(json_extract(weather_response6.json(),'visibility'))
+
+weather_response7 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Manchester&format=json&date=2022-03-24&enddate=2022-04-29&includelocation=M19 2FU")
+print(weather_response7.status_code)
+
+
+dates7 = np.repeat(json_extract(weather_response7.json(),'date'),8)
+
+times7 = np.array(json_extract(weather_response7.json(),'time'))
+
+temps7 = np.array(json_extract(weather_response7.json(),'tempC'))
+
+winds7 = np.array(json_extract(weather_response7.json(),'windspeedKmph'))
+
+precips7 = np.array(json_extract(weather_response7.json(),'precipMM'))
+
+vis7 = np.array(json_extract(weather_response7.json(),'visibility'))
+
+dates = np.concatenate([dates1,dates2,dates3,dates4,dates5,dates6,dates7])
+times = np.concatenate([times1,times2,times3,times4,times5,times6,times7])
+temps = np.concatenate([temps1,temps2,temps3,temps4,temps5,temps6,temps7])
+winds = np.concatenate([winds1,winds2,winds3,winds4,winds5,winds6,winds7])
+precips = np.concatenate([precips1,precips2,precips3,precips4,precips5,precips6,precips7])
+vis = np.concatenate([vis1,vis2,vis3,vis4,vis5,vis6,vis7])
+
+
+weather_man = np.column_stack((dates,times,temps.astype(float),winds.astype(float),precips.astype(float),vis.astype(float)),)
+weather_man = pd.DataFrame(weather_man)
+weather_man.columns = ['Date_M','Time_M','Temp_M','Wind_M','Precip_M','Visibility_M']
+
+weather_man.Time_M = weather_man['Time_M'].apply(int)
+weather_man.Time_M = [f'{s:04}' for s in weather_man['Time_M'].values]
+weather_man.Time_M = [f"{el[:2]}:{el[2:]}" for el in weather_man.Time_M]
+weather_man['Time_M'] = pd.to_datetime(weather_man['Date_M'] + weather_man['Time_M'], format='%Y-%m-%d%H:%M')
+
+
+
+weather_response1 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=London&format=json&date=2021-09-01&enddate=2022-04-29&includelocation=NW1 2HS")
+print(weather_response1.status_code)
+
+
+dates1 = np.repeat(json_extract(weather_response1.json(),'date'),8)
+
+times1 = np.array(json_extract(weather_response1.json(),'time'))
+
+temps1 = np.array(json_extract(weather_response1.json(),'tempC'))
+
+winds1 = np.array(json_extract(weather_response1.json(),'windspeedKmph'))
+
+precips1 = np.array(json_extract(weather_response1.json(),'precipMM'))
+
+vis1 = np.array(json_extract(weather_response1.json(),'visibility'))
+
+weather_response2 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=London&format=json&date=2021-10-05&enddate=2022-04-29&includelocation=NW1 2HS")
+print(weather_response2.status_code)
+
+
+dates2 = np.repeat(json_extract(weather_response2.json(),'date'),8)
+
+times2 = np.array(json_extract(weather_response2.json(),'time'))
+
+temps2 = np.array(json_extract(weather_response2.json(),'tempC'))
+
+winds2 = np.array(json_extract(weather_response2.json(),'windspeedKmph'))
+
+precips2 = np.array(json_extract(weather_response2.json(),'precipMM'))
+
+vis2 = np.array(json_extract(weather_response2.json(),'visibility'))
+
+weather_response3 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=London&format=json&date=2021-11-08&enddate=2022-04-29&includelocation=NW1 2HS")
+print(weather_response3.status_code)
+
+
+dates3 = np.repeat(json_extract(weather_response3.json(),'date'),8)
+
+times3 = np.array(json_extract(weather_response3.json(),'time'))
+
+temps3 = np.array(json_extract(weather_response3.json(),'tempC'))
+
+winds3 = np.array(json_extract(weather_response3.json(),'windspeedKmph'))
+
+precips3 = np.array(json_extract(weather_response3.json(),'precipMM'))
+
+vis3 = np.array(json_extract(weather_response3.json(),'visibility'))
+
+weather_response4 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=London&format=json&date=2021-12-12&enddate=2022-04-29&includelocation=NW1 2HS")
+print(weather_response4.status_code)
+
+
+dates4 = np.repeat(json_extract(weather_response4.json(),'date'),8)
+
+times4 = np.array(json_extract(weather_response4.json(),'time'))
+
+temps4 = np.array(json_extract(weather_response4.json(),'tempC'))
+
+winds4 = np.array(json_extract(weather_response4.json(),'windspeedKmph'))
+
+precips4 = np.array(json_extract(weather_response4.json(),'precipMM'))
+
+vis4 = np.array(json_extract(weather_response4.json(),'visibility'))
+
+weather_response5 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=London&format=json&date=2022-01-15&enddate=2022-04-29&includelocation=NW1 2HS")
+print(weather_response5.status_code)
+
+
+dates5 = np.repeat(json_extract(weather_response5.json(),'date'),8)
+
+times5 = np.array(json_extract(weather_response5.json(),'time'))
+
+temps5 = np.array(json_extract(weather_response5.json(),'tempC'))
+
+winds5 = np.array(json_extract(weather_response5.json(),'windspeedKmph'))
+
+precips5 = np.array(json_extract(weather_response5.json(),'precipMM'))
+
+vis5 = np.array(json_extract(weather_response5.json(),'visibility'))
+
+weather_response6 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=London&format=json&date=2022-02-18&enddate=2022-04-29&includelocation=NW1 2HS")
+print(weather_response6.status_code)
+
+
+dates6 = np.repeat(json_extract(weather_response6.json(),'date'),8)
+
+times6 = np.array(json_extract(weather_response6.json(),'time'))
+
+temps6 = np.array(json_extract(weather_response6.json(),'tempC'))
+
+winds6 = np.array(json_extract(weather_response6.json(),'windspeedKmph'))
+
+precips6 = np.array(json_extract(weather_response6.json(),'precipMM'))
+
+vis6 = np.array(json_extract(weather_response6.json(),'visibility'))
+
+weather_response7 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=London&format=json&date=2022-03-24&enddate=2022-04-29&includelocation=NW1 2HS")
+print(weather_response7.status_code)
+
+
+dates7 = np.repeat(json_extract(weather_response7.json(),'date'),8)
+
+times7 = np.array(json_extract(weather_response7.json(),'time'))
+
+temps7 = np.array(json_extract(weather_response7.json(),'tempC'))
+
+winds7 = np.array(json_extract(weather_response7.json(),'windspeedKmph'))
+
+precips7 = np.array(json_extract(weather_response7.json(),'precipMM'))
+
+vis7 = np.array(json_extract(weather_response7.json(),'visibility'))
+
+dates = np.concatenate([dates1,dates2,dates3,dates4,dates5,dates6,dates7])
+times = np.concatenate([times1,times2,times3,times4,times5,times6,times7])
+temps = np.concatenate([temps1,temps2,temps3,temps4,temps5,temps6,temps7])
+winds = np.concatenate([winds1,winds2,winds3,winds4,winds5,winds6,winds7])
+precips = np.concatenate([precips1,precips2,precips3,precips4,precips5,precips6,precips7])
+vis = np.concatenate([vis1,vis2,vis3,vis4,vis5,vis6,vis7])
+
+
+weather_lon = np.column_stack((dates,times,temps.astype(float),winds.astype(float),precips.astype(float),vis.astype(float)),)
+weather_lon = pd.DataFrame(weather_lon)
+weather_lon.columns = ['Date_L','Time_L','Temp_L','Wind_L','Precip_L','Visibility_L']
+
+weather_lon.Time_L = weather_lon['Time_L'].apply(int)
+weather_lon.Time_L = [f'{s:04}' for s in weather_lon['Time_L'].values]
+weather_lon.Time_L = [f"{el[:2]}:{el[2:]}" for el in weather_lon.Time_L]
+weather_lon['Time_L'] = pd.to_datetime(weather_lon['Date_L'] + weather_lon['Time_L'], format='%Y-%m-%d%H:%M')
+
+weather_lon = weather_lon.drop(['Date_L'],axis=1)
+weather_man = weather_man.drop(['Date_M'],axis=1)
+
+weather_man.rename(columns={'Time_M':'AcA'}, inplace=True)
+weather_lon.rename(columns={'Time_L':'AcD'}, inplace=True)
