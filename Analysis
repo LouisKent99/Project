@@ -8,57 +8,87 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 from datetime import datetime
+import matplotlib
+
+trains = pd.read_csv('trains.csv')
+trains['ScD'] = pd.to_datetime(trains['ScD'], format='%Y-%m-%d %H:%M:%S')
+trains['AcD'] = pd.to_datetime(trains['AcD'], format='%Y-%m-%d %H:%M:%S')
+trains['ScA'] = pd.to_datetime(trains['ScA'], format='%Y-%m-%d %H:%M:%S')
+trains['AcA'] = pd.to_datetime(trains['AcA'], format='%Y-%m-%d %H:%M:%S')
+
+weather_man = pd.read_csv('weather_man.csv')
+weather_man['AcA'] = pd.to_datetime(weather_man['AcA'], format='%Y-%m-%d %H:%M:%S')
+
+weather_lon = pd.read_csv('weather_lon.csv')
+weather_lon['AcD'] = pd.to_datetime(weather_lon['AcD'], format='%Y-%m-%d %H:%M:%S')
 
 
 tol = pd.Timedelta('1 hour, 30 minute')
 df = pd.merge_asof(trains.sort_values('AcD'),weather_lon.sort_values('AcD'),on='AcD',direction='nearest',tolerance=tol)
 df = pd.merge_asof(df.sort_values('AcA'),weather_man.sort_values('AcA'),on='AcA',direction='nearest',tolerance=tol)
 
-df['left_late'] = df['AcD']-df['ScD']
-
+df['Left_Late'] = df['AcD']-df['ScD']
+"""
 conditions1 = [(df['left_late']< dt.timedelta(minutes=5)),
               (df['left_late']> dt.timedelta(minutes=5)) & (df['left_late']< dt.timedelta(minutes=10)),
               (df['left_late'] > dt.timedelta(minutes=10)) & (df['left_late']< dt.timedelta(minutes=15)),
               (df['left_late']> dt.timedelta(minutes=15)) & (df['left_late']< dt.timedelta(minutes=20)),
               (df['left_late']> dt.timedelta(minutes=20))]
 values1 = [0,1,2,3,4]
-
-df['left_late'] = np.select(conditions1,values1)
+"""
+df['Left_Late'] = df.Left_Late.dt.total_seconds()/60
 
 conditions2 = [(df['ScD'].dt.time < dt.time(5)),
-              (df['ScD'].dt.time > dt.time(5)) & (df['ScD'].dt.time < dt.time(9)) & (df['ScD'].dt.weekday < 5) ,
-              (df['ScD'].dt.time > dt.time(5)) & (df['ScD'].dt.time < dt.time(9)) & (df['ScD'].dt.weekday >4) ,
-              (df['ScD'].dt.time > dt.time(9)) & (df['ScD'].dt.time < dt.time(16)),
-              (df['ScD'].dt.time > dt.time(16)) & (df['ScD'].dt.time < dt.time(18,5)) & (df['ScD'].dt.weekday < 5),
-              (df['ScD'].dt.time > dt.time(16)) & (df['ScD'].dt.time < dt.time(18,5)) & (df['ScD'].dt.weekday > 4),
-              (df['ScD'].dt.time > dt.time(18,5))]
+              (df['ScD'].dt.time > dt.time(5)) & (df['ScD'].dt.time < dt.time(10,5)) & (df['ScD'].dt.weekday < 4) ,
+              (df['ScD'].dt.time > dt.time(5)) & (df['ScD'].dt.time < dt.time(10,5)) & (df['ScD'].dt.weekday >3) ,
+              (df['ScD'].dt.time > dt.time(10,5)) & (df['ScD'].dt.time < dt.time(1)),
+              (df['ScD'].dt.time > dt.time(14,5)) & (df['ScD'].dt.time < dt.time(20)) & (df['ScD'].dt.weekday < 4),
+              (df['ScD'].dt.time > dt.time(14,5)) & (df['ScD'].dt.time < dt.time(20)) & (df['ScD'].dt.weekday > 3),
+              (df['ScD'].dt.time > dt.time(20))]
 
 values2 = [0,1,0,0,1,0,0]
 
 df['Peak'] = np.select(conditions2,values2)
 
 
-df['time_late'] = df['AcA']-df['ScA']
-df.time_late[df.time_late < dt.timedelta(0)] = dt.timedelta(0)
-df['Delayed'] = np.where(df['time_late']>dt.timedelta(minutes = 10),1,-1)
-df.drop(df[df.ScD >datetime(2022,4,28)].index, inplace=True)
+df['Time_Late'] = df['AcA']-df['ScA']
+df.Time_Late[df.Time_Late < dt.timedelta(0)] = dt.timedelta(0)
+df['Time_Late'] = df.Time_Late.dt.total_seconds()/60
+df['Delayed'] = np.where(df['Time_Late']>10,1,0)
+#df.drop(df[df.ScD >datetime(2022,4,28)].index, inplace=True)
 
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn import preprocessing
 from sklearn import tree
+from sklearn.preprocessing import RobustScaler
 
-X = df.drop(['ScD','AcD','ScA','AcA','time_late','Delayed'],axis='columns')
+correlation = df.drop(['ScD','AcD','ScA','AcA','Time_Late'], axis ='columns').corr()
+
+outlierDet = df.drop(['ScD','AcD','ScA','AcA','Time_Late'], axis ='columns')
+
+from sklearn.ensemble import IsolationForest
+
+clf = IsolationForest(n_estimators=10, warm_start=True)
+preds = clf.fit_predict(outlierDet)
+preds
+df['outliers'] = preds
+df = df[df['outliers'] != -1]
+
+X = df.drop(['ScD','AcD','ScA','AcA','Time_Late','Delayed','outliers'],axis='columns')
 X.head()
-
-
 normalisedX = pd.DataFrame(preprocessing.normalize(X))
 
-y=df.Delayed
-X_train, X_test, y_train, y_test = train_test_split(normalisedX,y,test_size=0.20)
 
-model=SVC(C=10, gamma=1)
+transformer = RobustScaler().fit(X)
+transformer
+scaledX = transformer.transform(X)
+
+y=df.Delayed
+X_train, X_test, y_train, y_test = train_test_split(normalisedX,y,test_size=0.2)
+
+model=SVC(C=10, gamma=1,class_weight={0: 1, 1: 4.2})
 model.fit(X_train,y_train)
 
 model.score(X_test,y_test)
@@ -69,7 +99,7 @@ print(classification_report(y_test, y_pred))
 
 
 
-clf = tree.DecisionTreeClassifier(criterion='entropy')
+clf = tree.DecisionTreeClassifier(criterion='entropy', class_weight= {0: 1, 1: 2.5})
 clf = clf.fit(X_train, y_train)
 clf.score(X_test,y_test)
 
@@ -77,3 +107,50 @@ y_pred = clf.predict(X_test)
 
 print(confusion_matrix(y_test,y_pred))
 print(classification_report(y_test, y_pred))
+
+import matplotlib.pyplot as plt
+
+# save plot
+plt.figure(figsize=(12,12))
+tree.plot_tree(clf, fontsize=6)
+plt.savefig('tree_high_dpi', dpi=100)
+
+"""
+df['time_late'] = df.time_late.dt.total_seconds()/60
+
+conditions3 = [(df['time_late']<5),
+              (df['time_late']> 5) & (df['time_late']< 10),
+              (df['time_late'] > 10) & (df['time_late']< 15),
+              (df['time_late']> 15) & (df['time_late']< 20),
+              (df['left_late']> 20) & (df['left_late']< 25),
+              (df['left_late']> 25) & (df['left_late']< 30),
+              (df['left_late']> 30)]
+values3 = [0,1,2,3,4,5,6]
+
+df['Delayed'] = np.select(conditions3,values3)
+
+X2 = df.drop(['ScD','AcD','ScA','AcA','time_late','Delayed'],axis='columns')
+
+normalisedX2 = pd.DataFrame(preprocessing.normalize(X2))
+
+y2=df.Delayed
+X2_train, X2_test, y2_train, y2_test = train_test_split(normalisedX2,y2,test_size=0.25)
+
+
+clf = tree.DecisionTreeClassifier(criterion='entropy')
+clf = clf.fit(X2_train, y2_train)
+clf.score(X2_test,y2_test)
+
+y2_pred = clf.predict(X2_test)
+
+print(confusion_matrix(y2_test,y2_pred))
+print(classification_report(y2_test, y2_pred))
+
+prediction = clf.predict(X2_train)
+
+df['prediction'] = prediction
+"""
+import graphviz 
+dot_data = tree.export_graphviz(clf, out_file=None) 
+graph = graphviz.Source(dot_data) 
+graph.render("trains") 
