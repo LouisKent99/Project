@@ -9,6 +9,7 @@ import requests
 import json
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 
 def jprint(obj):
@@ -17,21 +18,34 @@ def jprint(obj):
     print(text)
 
 #parameters for retrieving data from National Rail Historic Service Performance API
-params = {"from_loc":"EUS",
+params1 = {"from_loc":"EUS",
     "to_loc":"MAN",
-    "from_time":"0600",
-    "to_time":"2000",
-    "from_date":"2021-09-01",
-    "to_date":"2022-05-01",
+    "from_time":"0700",
+    "to_time":"2200",
+    "from_date":"2021-05-17",
+    "to_date":"2022-12-31",
     "days":"WEEKDAY"}
 
 headers = {'Content-type': 'application/json'}
 
 
-response = requests.post("https://hsp-prod.rockshore.net/api/v1/serviceMetrics",auth=('louiskent1999@gmail.com','NSvxT!dG7kQ!3Bs'),headers=headers,json=params)
+response = requests.post("https://hsp-prod.rockshore.net/api/v1/serviceMetrics",auth=('louiskent1999@gmail.com','NSvxT!dG7kQ!3Bs'),headers=headers,json=params1)
 print(response.status_code)
 
 jsonResponse = response.json()
+
+params2 = {"from_loc":"EUS",
+    "to_loc":"MAN",
+    "from_time":"0700",
+    "to_time":"2200",
+    "from_date":"2022-01-01",
+    "to_date":"2022-05-12",
+    "days":"WEEKDAY"}
+
+response = requests.post("https://hsp-prod.rockshore.net/api/v1/serviceMetrics",auth=('louiskent1999@gmail.com','NSvxT!dG7kQ!3Bs'),headers=headers,json=params2)
+print(response.status_code)
+
+jsonResponse2 = response.json()
 
 
 #Finding all train RIDs - unique train identifier - that have ran based on params
@@ -40,6 +54,13 @@ rid = []
 for i in range(len(jsonResponse["Services"])):
     tmp = np.array(jsonResponse["Services"][i]["serviceAttributesMetrics"]["rids"])
     rid.append(tmp)
+
+
+for i in range(len(jsonResponse2["Services"])):
+    tmp = np.array(jsonResponse2["Services"][i]["serviceAttributesMetrics"]["rids"])
+    rid.append(tmp)
+    
+    
 rid = np.concatenate(rid)
 
 #Using the RIDs specific details about the train journey/
@@ -81,3 +102,7 @@ trains['ScA'] = pd.to_datetime(trains['Date'] + trains['ScA'], format='%Y-%m-%d%
 trains['AcA'] = pd.to_datetime(trains['Date'] + trains['AcA'], format='%Y-%m-%d%H:%M')
 trains=trains.drop(['Date'],axis=1)
 
+trains = trains.replace(datetime(2022,4,1,0,0),datetime(2022,4,2,0,0))
+trains = trains.replace(datetime(2022,3,25,16,19),datetime(2022,3,25,17,33))
+
+trains.to_csv('trains.csv',index=False)
