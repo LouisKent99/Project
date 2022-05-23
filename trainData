@@ -21,7 +21,7 @@ def jprint(obj):
 params1 = {"from_loc":"EUS",
     "to_loc":"MAN",
     "from_time":"0700",
-    "to_time":"2200",
+    "to_time":"2100",
     "from_date":"2021-05-17",
     "to_date":"2022-12-31",
     "days":"WEEKDAY"}
@@ -37,7 +37,7 @@ jsonResponse = response.json()
 params2 = {"from_loc":"EUS",
     "to_loc":"MAN",
     "from_time":"0700",
-    "to_time":"2200",
+    "to_time":"2100",
     "from_date":"2022-01-01",
     "to_date":"2022-05-12",
     "days":"WEEKDAY"}
@@ -102,7 +102,5 @@ trains['ScA'] = pd.to_datetime(trains['Date'] + trains['ScA'], format='%Y-%m-%d%
 trains['AcA'] = pd.to_datetime(trains['Date'] + trains['AcA'], format='%Y-%m-%d%H:%M')
 trains=trains.drop(['Date'],axis=1)
 
-trains = trains.replace(datetime(2022,4,1,0,0),datetime(2022,4,2,0,0))
-trains = trains.replace(datetime(2022,3,25,16,19),datetime(2022,3,25,17,33))
 
 trains.to_csv('trains.csv',index=False)
