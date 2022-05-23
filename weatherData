@@ -2,8 +2,8 @@
 """
 Created on Tue May 10 19:10:59 2022
 
-This data scraoe is convoluted but was the only way to get free access to historical data
-I could find. Requires 7 separate get requests to worldweatheronline.com at two different
+This data scrape is convoluted but was the only way to get free access to historical data
+I could find. Requires 13 separate get requests to worldweatheronline.com at three different
 locations and then a concatenation of specifc weather features of interest which 
 affect train delays.
 
@@ -266,6 +266,7 @@ vis13 = np.array(json_extract(weather_response13.json(),'visibility'))
 
 snow13 = np.repeat(json_extract(weather_response13.json(),'totalSnow_cm'),8)
 
+#concatenation of data
 dates = np.concatenate([dates1,dates2,dates3,dates4,dates5,dates6,dates7,dates8,dates9,dates10,dates11,dates12,dates13])
 times = np.concatenate([times1,times2,times3,times4,times5,times6,times7,times8,times9,times10,times11,times12,times13])
 temps = np.concatenate([temps1,temps2,temps3,temps4,temps5,temps6,temps7,temps8,temps9,temps10,temps11,temps12,temps13])
@@ -279,7 +280,7 @@ snow = np.concatenate([snow1,snow2,snow3,snow4,snow5,snow6,snow7,snow8,snow9,sno
 weather_man = np.column_stack((dates,times,temps.astype(float),winds.astype(float),precips.astype(float),vis.astype(float),snow.astype(float)),)
 weather_man = pd.DataFrame(weather_man)
 weather_man.columns = ['Date_M','Time_M','Temp_M','Wind_M','Precip_M','Visibility_M','Snow_M']
-
+#this converts the time from hhmm to hh:mm for ease of formatting into datetime
 weather_man.Time_M = weather_man['Time_M'].apply(int)
 weather_man.Time_M = [f'{s:04}' for s in weather_man['Time_M'].values]
 weather_man.Time_M = [f"{el[:2]}:{el[2:]}" for el in weather_man.Time_M]
@@ -519,8 +520,6 @@ vis13 = np.array(json_extract(weather_response13.json(),'visibility'))
 
 snow13 = np.repeat(json_extract(weather_response13.json(),'totalSnow_cm'),8)
 
-weather_response1 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=London&format=json&date=2021-09-01&enddate=2022-04-29&includelocation=NW1 2HS")
-print(weather_response1.status_code)
 
 
 
@@ -544,11 +543,269 @@ weather_lon.Time_L = [f'{s:04}' for s in weather_lon['Time_L'].values]
 weather_lon.Time_L = [f"{el[:2]}:{el[2:]}" for el in weather_lon.Time_L]
 weather_lon['Time_L'] = pd.to_datetime(weather_lon['Date_L'] + weather_lon['Time_L'], format='%Y-%m-%d%H:%M')
 
+
+weather_response1 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2021-05-17&enddate=2021-05-31&includelocation=CV21 3LA")
+print(weather_response1.status_code)
+
+
+dates1 = np.repeat(json_extract(weather_response1.json(),'date'),8)
+
+times1 = np.array(json_extract(weather_response1.json(),'time'))
+
+temps1 = np.array(json_extract(weather_response1.json(),'tempC'))
+
+winds1 = np.array(json_extract(weather_response1.json(),'windspeedKmph'))
+
+precips1 = np.array(json_extract(weather_response1.json(),'precipMM'))
+
+vis1 = np.array(json_extract(weather_response1.json(),'visibility'))
+
+snow1 = np.repeat(json_extract(weather_response1.json(),'totalSnow_cm'),8)
+
+weather_response2 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2021-06-01&enddate=2021-06-30&includelocation=CV21 3LA")
+print(weather_response2.status_code)
+
+
+dates2 = np.repeat(json_extract(weather_response2.json(),'date'),8)
+
+times2 = np.array(json_extract(weather_response2.json(),'time'))
+
+temps2 = np.array(json_extract(weather_response2.json(),'tempC'))
+
+winds2 = np.array(json_extract(weather_response2.json(),'windspeedKmph'))
+
+precips2 = np.array(json_extract(weather_response2.json(),'precipMM'))
+
+vis2 = np.array(json_extract(weather_response2.json(),'visibility'))
+
+snow2 = np.repeat(json_extract(weather_response2.json(),'totalSnow_cm'),8)
+
+weather_response3 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2021-07-01&enddate=2021-07-31&includelocation=CV21 3LA")
+print(weather_response3.status_code)
+
+
+dates3 = np.repeat(json_extract(weather_response3.json(),'date'),8)
+
+times3 = np.array(json_extract(weather_response3.json(),'time'))
+
+temps3 = np.array(json_extract(weather_response3.json(),'tempC'))
+
+winds3 = np.array(json_extract(weather_response3.json(),'windspeedKmph'))
+
+precips3 = np.array(json_extract(weather_response3.json(),'precipMM'))
+
+vis3 = np.array(json_extract(weather_response3.json(),'visibility'))
+
+snow3 = np.repeat(json_extract(weather_response3.json(),'totalSnow_cm'),8)
+
+weather_response4 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2021-08-01&enddate=2021-08-31&includelocation=CV21 3LA")
+print(weather_response4.status_code)
+
+
+dates4 = np.repeat(json_extract(weather_response4.json(),'date'),8)
+
+times4 = np.array(json_extract(weather_response4.json(),'time'))
+
+temps4 = np.array(json_extract(weather_response4.json(),'tempC'))
+
+winds4 = np.array(json_extract(weather_response4.json(),'windspeedKmph'))
+
+precips4 = np.array(json_extract(weather_response4.json(),'precipMM'))
+
+vis4 = np.array(json_extract(weather_response4.json(),'visibility'))
+
+snow4 = np.repeat(json_extract(weather_response4.json(),'totalSnow_cm'),8)
+
+weather_response5 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2021-09-01&enddate=2021-09-30&includelocation=CV21 3LA")
+print(weather_response5.status_code)
+
+
+dates5 = np.repeat(json_extract(weather_response5.json(),'date'),8)
+
+times5 = np.array(json_extract(weather_response5.json(),'time'))
+
+temps5 = np.array(json_extract(weather_response5.json(),'tempC'))
+
+winds5 = np.array(json_extract(weather_response5.json(),'windspeedKmph'))
+
+precips5 = np.array(json_extract(weather_response5.json(),'precipMM'))
+
+vis5 = np.array(json_extract(weather_response5.json(),'visibility'))
+
+snow5 = np.repeat(json_extract(weather_response5.json(),'totalSnow_cm'),8)
+
+weather_response6 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2021-10-01&enddate=2021-10-31&includelocation=CV21 3LA")
+print(weather_response6.status_code)
+
+
+dates6 = np.repeat(json_extract(weather_response6.json(),'date'),8)
+
+times6 = np.array(json_extract(weather_response6.json(),'time'))
+
+temps6 = np.array(json_extract(weather_response6.json(),'tempC'))
+
+winds6 = np.array(json_extract(weather_response6.json(),'windspeedKmph'))
+
+precips6 = np.array(json_extract(weather_response6.json(),'precipMM'))
+
+vis6 = np.array(json_extract(weather_response6.json(),'visibility'))
+
+snow6 = np.repeat(json_extract(weather_response6.json(),'totalSnow_cm'),8)
+
+weather_response7 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2021-11-01&enddate=2021-11-30&includelocation=CV21 3LA")
+print(weather_response7.status_code)
+
+
+dates7 = np.repeat(json_extract(weather_response7.json(),'date'),8)
+
+times7 = np.array(json_extract(weather_response7.json(),'time'))
+
+temps7 = np.array(json_extract(weather_response7.json(),'tempC'))
+
+winds7 = np.array(json_extract(weather_response7.json(),'windspeedKmph'))
+
+precips7 = np.array(json_extract(weather_response7.json(),'precipMM'))
+
+vis7 = np.array(json_extract(weather_response7.json(),'visibility'))
+
+snow7 = np.repeat(json_extract(weather_response7.json(),'totalSnow_cm'),8)
+
+weather_response8 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2021-12-01&enddate=2021-12-31&includelocation=CV21 3LA")
+print(weather_response8.status_code)
+
+dates8 = np.repeat(json_extract(weather_response8.json(),'date'),8)
+
+times8 = np.array(json_extract(weather_response8.json(),'time'))
+
+temps8 = np.array(json_extract(weather_response8.json(),'tempC'))
+
+winds8 = np.array(json_extract(weather_response8.json(),'windspeedKmph'))
+
+precips8 = np.array(json_extract(weather_response8.json(),'precipMM'))
+
+vis8 = np.array(json_extract(weather_response8.json(),'visibility'))
+
+snow8 = np.repeat(json_extract(weather_response8.json(),'totalSnow_cm'),8)
+
+weather_response9 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2022-01-01&enddate=2022-01-31&includelocation=CV21 3LA")
+print(weather_response9.status_code)
+
+
+dates9 = np.repeat(json_extract(weather_response9.json(),'date'),8)
+
+times9 = np.array(json_extract(weather_response9.json(),'time'))
+
+temps9 = np.array(json_extract(weather_response9.json(),'tempC'))
+
+winds9 = np.array(json_extract(weather_response9.json(),'windspeedKmph'))
+
+precips9 = np.array(json_extract(weather_response9.json(),'precipMM'))
+
+vis9 = np.array(json_extract(weather_response9.json(),'visibility'))
+
+snow9 = np.repeat(json_extract(weather_response9.json(),'totalSnow_cm'),8)
+
+weather_response10 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2022-02-01&enddate=2022-02-28&includelocation=CV21 3LA")
+print(weather_response10.status_code)
+
+
+dates10 = np.repeat(json_extract(weather_response10.json(),'date'),8)
+
+times10 = np.array(json_extract(weather_response10.json(),'time'))
+
+temps10 = np.array(json_extract(weather_response10.json(),'tempC'))
+
+winds10 = np.array(json_extract(weather_response10.json(),'windspeedKmph'))
+
+precips10 = np.array(json_extract(weather_response10.json(),'precipMM'))
+
+vis10 = np.array(json_extract(weather_response10.json(),'visibility'))
+
+snow10 = np.repeat(json_extract(weather_response10.json(),'totalSnow_cm'),8)
+
+weather_response11 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2022-03-01&enddate=2022-03-31&includelocation=CV21 3LA")
+print(weather_response11.status_code)
+
+
+dates11 = np.repeat(json_extract(weather_response11.json(),'date'),8)
+
+times11 = np.array(json_extract(weather_response11.json(),'time'))
+
+temps11 = np.array(json_extract(weather_response11.json(),'tempC'))
+
+winds11 = np.array(json_extract(weather_response11.json(),'windspeedKmph'))
+
+precips11 = np.array(json_extract(weather_response11.json(),'precipMM'))
+
+vis11 = np.array(json_extract(weather_response11.json(),'visibility'))
+
+snow11 = np.repeat(json_extract(weather_response11.json(),'totalSnow_cm'),8)
+
+weather_response12 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2022-04-01&enddate=2022-04-30&includelocation=CV21 3LA")
+print(weather_response12.status_code)
+
+
+dates12 = np.repeat(json_extract(weather_response12.json(),'date'),8)
+
+times12 = np.array(json_extract(weather_response12.json(),'time'))
+
+temps12 = np.array(json_extract(weather_response12.json(),'tempC'))
+
+winds12 = np.array(json_extract(weather_response12.json(),'windspeedKmph'))
+
+precips12 = np.array(json_extract(weather_response12.json(),'precipMM'))
+
+vis12 = np.array(json_extract(weather_response12.json(),'visibility'))
+
+snow12 = np.repeat(json_extract(weather_response12.json(),'totalSnow_cm'),8)
+
+weather_response13 = requests.get("https://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=a91cf711ab9a432aa39115955222804&q=Rugby&format=json&date=2022-05-01&enddate=2022-05-15&includelocation=CV21 3LA")
+print(weather_response13.status_code)
+
+
+dates13 = np.repeat(json_extract(weather_response13.json(),'date'),8)
+
+times13 = np.array(json_extract(weather_response13.json(),'time'))
+
+temps13 = np.array(json_extract(weather_response13.json(),'tempC'))
+
+winds13 = np.array(json_extract(weather_response13.json(),'windspeedKmph'))
+
+precips13 = np.array(json_extract(weather_response13.json(),'precipMM'))
+
+vis13 = np.array(json_extract(weather_response13.json(),'visibility'))
+
+snow13 = np.repeat(json_extract(weather_response13.json(),'totalSnow_cm'),8)
+
+dates = np.concatenate([dates1,dates2,dates3,dates4,dates5,dates6,dates7,dates8,dates9,dates10,dates11,dates12,dates13])
+times = np.concatenate([times1,times2,times3,times4,times5,times6,times7,times8,times9,times10,times11,times12,times13])
+temps = np.concatenate([temps1,temps2,temps3,temps4,temps5,temps6,temps7,temps8,temps9,temps10,temps11,temps12,temps13])
+winds = np.concatenate([winds1,winds2,winds3,winds4,winds5,winds6,winds7,winds8,winds9,winds10,winds11,winds12,winds13])
+precips = np.concatenate([precips1,precips2,precips3,precips4,precips5,precips6,precips7,precips8,precips9,precips10,precips11,precips12,precips13])
+vis = np.concatenate([vis1,vis2,vis3,vis4,vis5,vis6,vis7,vis8,vis9,vis10,vis11,vis12,vis13])
+snow = np.concatenate([snow1,snow2,snow3,snow4,snow5,snow6,snow7,snow8,snow9,snow10,snow11,snow12,snow13])
+
+
+
+weather_rug = np.column_stack((dates,times,temps.astype(float),winds.astype(float),precips.astype(float),vis.astype(float),snow.astype(float)),)
+weather_rug = pd.DataFrame(weather_rug)
+weather_rug.columns = ['Date_R','Time_R','Temp_R','Wind_R','Precip_R','Visibility_R','Snow_R']
+
+weather_rug.Time_R = weather_rug['Time_R'].apply(int)
+weather_rug.Time_R = [f'{s:04}' for s in weather_rug['Time_R'].values]
+weather_rug.Time_R = [f"{el[:2]}:{el[2:]}" for el in weather_rug.Time_R]
+weather_rug['Time_R'] = pd.to_datetime(weather_rug['Date_R'] + weather_rug['Time_R'], format='%Y-%m-%d%H:%M')
+
+
 weather_lon = weather_lon.drop(['Date_L'],axis=1)
 weather_man = weather_man.drop(['Date_M'],axis=1)
-
+weather_rug = weather_rug.drop(['Date_R'],axis=1)
+#this allows merging of weather data into train data by naming columns the same
 weather_man.rename(columns={'Time_M':'AcA'}, inplace=True)
 weather_lon.rename(columns={'Time_L':'AcD'}, inplace=True)
-
+weather_rug.rename(columns={'Time_R':'AcD'}, inplace=True)
+#to csv
 weather_man.to_csv('weather_man.csv',index=False)
 weather_lon.to_csv('weather_lon.csv',index=False)
+weather_rug.to_csv('weather_rug.csv',index=False)
+
